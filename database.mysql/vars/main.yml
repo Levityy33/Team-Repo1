@@ -1,0 +1,23 @@
+---
+# vars file for database.mysql
+list_packages:
+- httpd
+- mariadb 
+- mariadb-server
+- MySQL-python
+- php
+- php-mysql
+- phpmyadmin
+- MySQL-python
+
+service_list:
+- httpd
+- mariadb 
+
+roots_password: password
+
+firewall_service:
+- http
+- mysql
+
+ip_range: "192.168.33.0/24"
