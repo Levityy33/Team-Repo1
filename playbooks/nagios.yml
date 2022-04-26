@@ -1,0 +1,7 @@
+---
+- name: Running nagios roles/nagios-server
+  hosts: 192.168.33.80
+  become: yes
+  roles:
+    - /ansible/nagios-server
+

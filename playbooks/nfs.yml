@@ -1,0 +1,65 @@
+---
+- name: Install and configure Nfs
+  hosts: nfs
+  remote_user: ansible
+  become: true
+
+  tasks: 
+  - name: install nfs packages
+    yum:
+      name: nfs-utils
+      state: latest
+  
+  - name: Start and enable rpcbind
+    service:
+      name: rpcbind
+      state: started
+      enabled: yes
+
+  - name: Start and enable nfs-server
+    service:
+      name: nfs-server
+      state: started
+      enabled: yes
+
+  - name: Start and enable nfs-lock
+    service:
+      name: nfs-lock
+      state: started
+      enabled: yes
+
+  - name: Start and enable nfs-idmap
+    service:
+      name: nfs-idmap
+      state: started
+      enabled: yes
+
+  - name: Creating shared directory
+    file:
+      path: /var/nfsshare
+      state: directory
+      owner: nfsnobody
+      group: nfsnobody
+      mode: '0755'
+  
+  - name: Copy exports file
+    template:
+      src: /ansible/exports.j2
+      dest: /etc/exports
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: make changes effective
+    shell: exportfs -a
+
+  - name: Disable firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: false
+
+  - name: restart nfs-server
+    service:
+      name: nfs-server
+      state: restarted

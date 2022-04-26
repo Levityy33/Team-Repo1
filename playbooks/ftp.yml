@@ -1,0 +1,53 @@
+---
+host: ftp
+become: true
+remote_user: ansible
+
+tasks:
+  - name: Install ftp
+    yum: 
+      name: vsftpd
+      status: present
+  
+  - name: Create local user
+    shell: "id ftpuser | | useradd ftpuser -d /var/ftp/user -p $(openssl passwd password)"
+
+  - name: Creating ftp directory
+    file:
+      path: /var/ftp/pub
+      state: directory
+      owner: ftpuser
+      group: ftpuser
+      mode: '0755'
+
+  - name: Disable firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: false
+
+  - selinux:
+      state: disabled
+
+  - name: configuring /etc/vsftpd/vsftpd.conf
+    ansible.builtin.lineinfile:
+      path: /etc/vsftpd/vsftpd.conf
+      regexp: '#anonymous_enable='
+      line: anonymous_enable=YES
+  
+  - name: Configuring to enable local users
+    asnible.builtin.lineinfile:
+      path: /etc/vsftpd/vsftpd.conf
+      regexp: '^#local_enable=YES'
+      line: local_enable=YES
+
+  - name: Configure to enable anonymous root
+    asnible.builtin.lineinfile:
+      path: /etc/vsftpd/vsftpd.conf
+      line: anon_root=/var/ftp/pub
+
+  - name: restart and enable ftp
+    systemd:
+    state: reloaded
+    name: vsftpd
+    enabled: yes

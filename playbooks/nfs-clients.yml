@@ -1,0 +1,65 @@
+---
+- name: Install and configure Nfs client
+  hosts: localhost
+  remote_user: ansible
+  become: true
+
+  tasks: 
+  - name: install nfs packages
+    yum:
+      name: nfs-utils
+      state: latest
+
+  - name: install autofs packages
+    yum:
+      name: autofs
+      state: latest
+
+  - name: Start and enabled rpcbind
+    service:
+      name: rpcbind
+      state: started
+      enabled: yes
+    when: ansible_distribution_major_version == "7"
+
+  - name: Start and enabled nfs-lock
+    service:
+      name: nfs-lock
+      state: started
+      enabled: yes
+    when: ansible_distribution_major_version == "7"
+
+  - name: Start and enabled nfs-idmap
+    service:
+      name: nfs-idmap
+      state: started
+      enabled: yes
+    when: ansible_distribution_major_version == "7"
+
+  - name: Creating client shared directory for centos7
+    file:
+      path: /clientshare
+      state: directory
+      owner: nfsnobody
+      group: nfsnobody
+      mode: '0755'
+    when: ansible_distribution_major_version == "7"
+
+  - name: Creating client shared directory for centos8
+    file:
+      path: /clientshare
+      state: directory
+      mode: '0755'
+    when: ansible_distribution_major_version == "8"
+  #- name: mounting nfs share
+  #  shell: mount -t nfs nfs:/var/nfsshare /clientshare
+
+  - name: mount nfs share permanently 
+    blockinfile:
+        path: /etc/fstab
+        block: |
+           nfs:/var/nfsshare       /clientshare            nfs     rw,sync,hard,intr  0 0
+
+  - name: mount 
+    shell: mount -a
+

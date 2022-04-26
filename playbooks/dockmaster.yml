@@ -1,0 +1,11 @@
+---
+- name: Install and configure docker
+  hosts: dockermaster
+  remote_user: ansible
+  become: true
+
+  tasks: 
+  - name: install nfs packages
+    yum:
+      name: nfs-utils
+      state: latest

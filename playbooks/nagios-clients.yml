@@ -1,0 +1,35 @@
+---
+  - name: Playbook for configuring nagios clients
+    hosts: all 
+    become: true
+    remote_user: ansible
+    become_user: root
+
+    vars:
+      nagios_server: 192.168.33.80
+      package_list:
+        - nrpe
+        - nagios-plugins-all
+
+    tasks:
+    - name: Install epel-release repository
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install nrpe, nagios-plugins-all
+      yum:
+        name: "{{ package_list }}"
+        state: latest
+
+    - name: Configure nagios server IP in nrpe configuration file
+      lineinfile:
+        dest: /etc/nagios/nrpe.cfg
+        regexp: allowed_hosts
+        line: allowed_hosts=127.0.0.1,{{nagios_server}}
+
+    - name: Start nrpe service and enable it on startup
+      service:
+        name: nrpe
+        state: restarted
+        enabled: yes

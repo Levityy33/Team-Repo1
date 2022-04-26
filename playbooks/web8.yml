@@ -1,0 +1,29 @@
+---
+- name: Installing  apache webserver
+  hosts: web8
+  become: yes
+  tasks:
+
+    - name: Add line in file /etc/hosts
+      shell: echo "10.0.0.71 prdx-haproxy117.ziyotek1.local haproxy117" >> /etc/hosts
+
+    - name: Installing a package
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Start and enable a service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Stop firewalld
+      shell: systemctl stop firewalld
+
+    - name: Add index.html file
+      copy:
+        dest: /var/www/html/index.html
+        content: "This is a list webserver 8888 we created with ansible"
+
+
